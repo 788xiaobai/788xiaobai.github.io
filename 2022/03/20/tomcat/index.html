@@ -1,0 +1,134 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="author" content="xiaobai,490751327@qq.com"><title>Web中间件安全-Tomcat篇 · 别来无恙</title><meta name="description" content="Tomcat一、学习要点1、简介Tomcat服务器是一个免费的开源代码的web应用服务器，属于轻量级应用服务器，在中小型系统和并发访问用户不是很多的场合被普遍使用。
+2、学习要点
+Tomcat服务器启用权限
+Tomcat服务器后台管理地址和修改管理账号密码
+隐藏Tomcat版本信息的方法
+禁止目录列"><meta name="keywords" content="网络安全学习"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><link rel="short icon" href="/images/favicon.png" type="image/x-icon"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/blog_basic.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="alternate" type="application/atom+xml" title="ATOM 1.0" href="/atom.xml"><meta name="generator" content="Hexo 5.4.1"></head><body><div class="sidebar animated fadeInDown"><div class="logo-title"><div class="title"><img src="/images/logo@2x.png" style="width:127px;"><h3 title=""><a href="/">别来无恙</a></h3><div class="description"><p>相信美好的事物即将发生！</p></div></div></div><ul class="social-links"></ul><div class="footer"><a target="_blank" href="/"><span>Theme by </span></a><a target="_blank" rel="noopener" href="https://www.caicai.me"> CaiCai </a><span>&</span><a target="_blank" rel="noopener" href="https://github.com/Ben02/hexo-theme-Anatole"> Ben</a><div class="by_farbox"><a href="https://hexo.io/zh-cn/" target="_blank">Proudly published with Hexo&#65281;</a></div></div></div><div class="main"><div class="page-top animated fadeInDown"><div class="nav"><li><a href="/">首页</a></li><li><a href="/about">关于</a></li><li><a href="/archives">归档</a></li><li><a href="/links">友链</a></li></div><div class="information"><div class="back_btn"><li><a class="fa fa-chevron-left" onclick="window.history.go(-1)"> </a></li></div><div class="avatar"><img src="/images/duck.png"></div></div></div><div class="autopagerize_page_element"><div class="content"><div class="post-page"><div class="post animated fadeInDown"><div class="post-title"><h3><a>Web中间件安全-Tomcat篇</a></h3></div><div class="post-content"><h3 id="Tomcat"><a href="#Tomcat" class="headerlink" title="Tomcat"></a>Tomcat</h3><h4 id="一、学习要点"><a href="#一、学习要点" class="headerlink" title="一、学习要点"></a>一、学习要点</h4><h5 id="1、简介"><a href="#1、简介" class="headerlink" title="1、简介"></a>1、简介</h5><p>Tomcat服务器是一个免费的开源代码的web应用服务器，属于轻量级应用服务器，在中小型系统和并发访问用户不是很多的场合被普遍使用。</p>
+<h5 id="2、学习要点"><a href="#2、学习要点" class="headerlink" title="2、学习要点"></a>2、学习要点</h5><ul>
+<li>Tomcat服务器启用权限</li>
+<li>Tomcat服务器后台管理地址和修改管理账号密码</li>
+<li>隐藏Tomcat版本信息的方法</li>
+<li>禁止目录列表，防止文件名泄露</li>
+<li>Tomcat的日志情况</li>
+<li>关闭不必要的接口和功能</li>
+<li>Tomcat服务区通过后台获取权限的方法</li>
+</ul>
+<h5 id="3、目录结构"><a href="#3、目录结构" class="headerlink" title="3、目录结构"></a>3、目录结构</h5><h6 id="①、文件结构"><a href="#①、文件结构" class="headerlink" title="①、文件结构"></a>①、文件结构</h6><ul>
+<li>bin：存放tomcat脚本文件；</li>
+<li>conf：tomcat配置文件；</li>
+<li>lib：tomcat运行需要的库文件；</li>
+<li>logs：存放执行时的log文件；</li>
+<li>temp：存放tomcat运行时生成的临时文件</li>
+<li>webapps：web发布目录，默认情况吧web应用放此目录；</li>
+<li>work：存放jsp编译后的class文件。</li>
+</ul>
+<h6 id="②、创建配置文件"><a href="#②、创建配置文件" class="headerlink" title="②、创建配置文件"></a>②、创建配置文件</h6><ul>
+<li>server.xml：配置tomcat启动的端口号、host主机、context等；</li>
+<li>web.xml：部署描述文件；</li>
+<li>tomcat-users.xml：tomcat的用户密码与权限。</li>
+</ul>
+<h4 id="二、服务安装"><a href="#二、服务安装" class="headerlink" title="二、服务安装"></a>二、服务安装</h4><h5 id="1、安装JDK环境"><a href="#1、安装JDK环境" class="headerlink" title="1、安装JDK环境"></a>1、安装JDK环境</h5><p>命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update  \\更新apt源</span><br><span class="line">sudo apt install default-jdk  \\下载安装jdk环境</span><br></pre></td></tr></table></figure>
+
+<h6 id="2、下载Tomcat"><a href="#2、下载Tomcat" class="headerlink" title="2、下载Tomcat"></a>2、下载Tomcat</h6><p>①、前往官网下载Core下的tar.gz对应安装包；<br>②、上传对应的tar.gz包至服务器；</p>
+<h6 id="3、安装Tomcat"><a href="#3、安装Tomcat" class="headerlink" title="3、安装Tomcat"></a>3、安装Tomcat</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf apache-tomcat-10.0.17.tar.gz  \\解压tomcat文件 </span><br><span class="line">sudo mkdir /opt/tomcat  \\创建tomcat目录</span><br><span class="line">sudo mv apache-tomcat-10.0.17 /opt/tomcat  \\移动tomcat文件至创建的tomcat目录</span><br><span class="line">sudo chmod 755 conf  \\赋予conf文件读执行权限</span><br></pre></td></tr></table></figure>
+
+<h5 id="4、修改脚本文件变量路径"><a href="#4、修改脚本文件变量路径" class="headerlink" title="4、修改脚本文件变量路径"></a>4、修改脚本文件变量路径</h5><p>寻找java系统路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo update-java-alternatives -l</span><br></pre></td></tr></table></figure>
+
+<p>编辑tomcat启动脚本文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi startup.sh </span><br></pre></td></tr></table></figure>
+
+<p>写入以下内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#set java environment</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64</span><br><span class="line">export JRE_HOME=$&#123;JAVA_HOME&#125;/jre</span><br><span class="line">export CLASSPATH=.:%&#123;JAVA_HOME&#125;/lib:%&#123;JRE_HOME&#125;/lib</span><br><span class="line">export PATH=$&#123;JAVA_HOME&#125;/bin:$PATH</span><br><span class="line"></span><br><span class="line">#tomcat</span><br><span class="line">export TOMCAT_HOME=/opt/tomcat/apache-tomcat-10.0.17</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<ul>
+<li>JAVA_HOM为当前主机的Java安装路径；</li>
+<li>TOMCAT_HOME为当前主机的tomcat安装路径。</li>
+</ul>
+<h5 id="5、启动Tomcat服务"><a href="#5、启动Tomcat服务" class="headerlink" title="5、启动Tomcat服务"></a>5、启动Tomcat服务</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./startup.sh   //执行tomcat服务启动脚本</span><br></pre></td></tr></table></figure>
+
+<p>注意：执行其他关闭等脚本也需要将 变量写入脚本内在运行。</p>
+<h4 id="三、安全配置"><a href="#三、安全配置" class="headerlink" title="三、安全配置"></a>三、安全配置</h4><h5 id="1、服务器运行权限"><a href="#1、服务器运行权限" class="headerlink" title="1、服务器运行权限"></a>1、服务器运行权限</h5><p>Linux中的Tomcat的运行选项与Tomcat的启动账户有关，例如使用root权限进行启动则tomcat权限也为root。</p>
+<p>查看权限</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep tomcat # 查看启动的用户名即为启动的权限</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 在启动tomcat是需要创建一个tomcat的普通用户进行启动。</p>
+<h5 id="2、服务器后台管理"><a href="#2、服务器后台管理" class="headerlink" title="2、服务器后台管理"></a>2、服务器后台管理</h5><p>tomcat主页有上有服务器状态、管理服务器部署的应用和管理主机页面，进入需要输入默认账户密码。</p>
+<p>账密配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi conf/tomcat-users.xml</span><br><span class="line"># 查看49-55行配置情况</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 删除&lt;!-----&gt;注释</span><br><span class="line">&lt;role rolename=&quot;manager-gui&quot;&gt; # manager-gui拥有服务器状态和管理服务器部署权限</span><br><span class="line">&lt;role rolename=&quot;admin-guu&quot;&gt; # admin-gui拥有管理主机页面</span><br><span class="line">&lt;user username=&quot;tomcat&quot; password=&lt;password&gt; role=&quot;manager-gui,admin-gui&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 将账号权限指明，并使用符合要求的强密码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vi webapps/host-manager/META-INF/context.xml</span><br><span class="line"></span><br><span class="line"># 查看21和22行配置</span><br><span class="line"></span><br><span class="line">&lt;Valve className=&quot;org.apache.catalina.values.RemoteAddrValve&quot;</span><br><span class="line">    allow=&quot;允许访问的地址&quot; /&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 将允许访问管理里页面设置为白名单地址，配置完成建议直接删除webapps目录</p>
+<h5 id="3、隐藏版本信息"><a href="#3、隐藏版本信息" class="headerlink" title="3、隐藏版本信息"></a>3、隐藏版本信息</h5><p>默认情况下tomcat出错会爆出服务器的版本信息。</p>
+<p>隐藏请求提示版本信息配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vi conf/server.xml</span><br><span class="line"># 查看68-70行设置成如下配置</span><br><span class="line"></span><br><span class="line">&lt;Connector port=&quot;8080&quot; protocol=&quot;HTTP/1.1&quot;</span><br><span class="line">    connectionTimeout=&quot;20000&quot;</span><br><span class="line">    redirectPOrt=&quot;8443&quot; server=&quot;nginx&quot;/&gt; # 指定server为需要伪造的服务器</span><br></pre></td></tr></table></figure>
+
+<p>隐藏错误提示版本信息配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 进入lib/cataline.jar将其解压</span><br><span class="line"># 然后进入lib/cataline/util目录</span><br><span class="line">vi ServerInfo.properties</span><br><span class="line"># 修改如下配置</span><br><span class="line"></span><br><span class="line">server.info = &lt;&gt;</span><br><span class="line">server.name = &lt;&gt;</span><br><span class="line"></span><br><span class="line"># 在使用jar uvf catalina.jar lib/catalina/util/ServerInfo.properties将文件压会jar包</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 需要将显示版本号的信息都进行伪装。</p>
+<h5 id="4、禁止目录列表"><a href="#4、禁止目录列表" class="headerlink" title="4、禁止目录列表"></a>4、禁止目录列表</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi conf/web.xml</span><br><span class="line"># 查看127行配置进行如下配置</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;param-value&gt;false&lt;/param-value&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 需要将该参数设置为false防止泄露目录</p>
+<h5 id="5、配置错误页面"><a href="#5、配置错误页面" class="headerlink" title="5、配置错误页面"></a>5、配置错误页面</h5><p>修改40x、50x等错误页面，防止信息泄露。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vi conf/web.xml</span><br><span class="line"># 在最后&lt;/web-app&gt;一行之前加入以下内容：</span><br><span class="line"></span><br><span class="line">&lt;error-page&gt; </span><br><span class="line">   &lt;error-code&gt;404&lt;/error-code&gt; # error-code指定出现错误的状态码</span><br><span class="line">   &lt;location&gt;xxx.html&lt;/location&gt; # location指定跳转的页面 </span><br><span class="line">&lt;/error-page&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 将错误码页面指定非信息泄露页面。</p>
+<h5 id="6、文件路径伪装"><a href="#6、文件路径伪装" class="headerlink" title="6、文件路径伪装"></a>6、文件路径伪装</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi conf.server.xml</span><br><span class="line"># 查看133-148段&lt;host&gt;&lt;/host&gt;之间的配置，添加如下配置</span><br><span class="line"></span><br><span class="line">&lt;Context path=&quot;&quot; docBase=&quot;&quot; debug=&quot;0&quot; reloadble=&quot;true&quot;&gt; # path为虚拟路径，docBase为真实路径</span><br></pre></td></tr></table></figure>
+
+<p><strong>安全配置：</strong> 配置path进行伪造网站真实路径。</p>
+<h5 id="7、日志分析"><a href="#7、日志分析" class="headerlink" title="7、日志分析"></a>7、日志分析</h5><p>默认日志文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">logs # tomcat默认日志文件存放目录</span><br><span class="line"># 各种日志文件作用如下</span><br><span class="line"></span><br><span class="line">loalhost.xxx.log：程序异常没有被捕获的时候抛出的地方</span><br><span class="line">catalina.xxx.log：程序的输出，tomcat的运行日志</span><br><span class="line">manager.xxx.log：manager项目专有的日志</span><br><span class="line">host-manager.xxx.log：manager项目专有的日志</span><br><span class="line">localhost_access_log：访问日志记录</span><br></pre></td></tr></table></figure>
+
+<p>默认日志文件格式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%h %l %u %t &amp;quot%r&amp;quot %s %b</span><br></pre></td></tr></table></figure>
+
+<p>参数解读：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">%h：远端主机地址；</span><br><span class="line">%l：远端登录名，始终为&quot;-&quot;；</span><br><span class="line">%u：远程用户名(根据验证信息而来)，若不存在得到一个&quot;-&quot;；</span><br><span class="line">%t：时间，用普通日志时间格式(标准英语格式) ；</span><br><span class="line">&quot;%r&quot;：请求头的第一行；</span><br><span class="line">%s：请求响应的状态码；</span><br><span class="line">%b：发送的字节数，包括请求头的数据，并且不能为零.</span><br></pre></td></tr></table></figure>
+
+<p>示例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1 - - [16/Mar/2022:22:20:55 -0400] &quot;GET / HTTP/1.1&quot; 200 11165</span><br></pre></td></tr></table></figure>
+
+<h4 id="四、漏洞复现"><a href="#四、漏洞复现" class="headerlink" title="四、漏洞复现"></a>四、漏洞复现</h4><h5 id="1、tomcat任意写文件漏洞"><a href="#1、tomcat任意写文件漏洞" class="headerlink" title="1、tomcat任意写文件漏洞"></a>1、tomcat任意写文件漏洞</h5><p><strong>漏洞原因：</strong><br>该漏洞可以利用HTTP的PUT方法直接上传webshell到目标服务器，从而获取权限</p>
+<p><strong>漏洞条件：</strong><br>Tomcat的web.xml默认情况下不存在该漏洞，需要手动将web.xml中的readonly设置为false。</p>
+<p><strong>漏洞复现：</strong><br>环境启动：<br>进入&#x2F;vulhub&#x2F;tomcat&#x2F;CVE-2017-12615路径执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d  \\启动漏洞环境</span><br><span class="line">docker-compose down  \\关闭漏洞环境</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>①、上传jsp木马至服务器（添加&#x2F;进行绕过）</p>
+<img src="/2022/03/20/tomcat/33270b988b5042ccaa1d11ea5c13bb6a.png" class="">
+<p>②、使用蚁剑进行连接</p>
+<img src="/2022/03/20/tomcat/e7babad4f5f64348bd9cef76cc2298ab.png" class="">
+
+<h5 id="2、tomcat文件读取-x2F-包含漏洞"><a href="#2、tomcat文件读取-x2F-包含漏洞" class="headerlink" title="2、tomcat文件读取&#x2F;包含漏洞"></a>2、tomcat文件读取&#x2F;包含漏洞</h5><p><strong>漏洞原因：</strong><br>Tomcat默认的 conf&#x2F;server.xml 中配置了2个 Connector，一个为8080的对外提供的HTTP协议(1.1版本)端口，默认监听地址: 0.0.0.0:8080，另外一个就是默认的8009 AJP协议(1.3版本)端口，<br>由于 Tomcat 在处理 AJP 请求时,未对请求做任何验证, 通过设置 AJP 连接器封装的 request 对象的属性, 导致产生任意文件读取漏洞和代码执行漏洞，也就是说我们只要构造 AJP 请求, 在请求时定义这三个属性就可以触发此漏洞。</p>
+<p><strong>影响版本：</strong><br>Apache Tomcat 9.x &lt; 9.0.31<br>Apache Tomcat 8.x &lt; 8.5.51<br>Apache Tomcat 7.x &lt; 7.0.100<br>Apache Tomcat 6.x</p>
+<p><strong>漏洞复现：</strong><br>环境启动：<br>进入&#x2F;vulhub&#x2F;httpd&#x2F;CVE-2020-1938路径执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d  \\启动漏洞环境</span><br><span class="line">docker-compose down  \\关闭漏洞环境</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>①、下载漏洞利用poc(cve-2020-1938-poc.py)：</p>
+<img src="/2022/03/20/tomcat/43fdd3dee8d74cac9f65044c8f253089.py" class="">
+<p>②、利用poc执行获取文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ython2 CNVD-2020-10487-Tomcat-Ajp-lfi.py -p 8009 -f &quot;/WEB-INF/web.xml&quot; &lt;ip&gt;</span><br></pre></td></tr></table></figure>
+
+<p>③、结合文件上传漏洞可以解析脚本获取webshell</p>
+<h5 id="3、Tomcat弱口令漏洞"><a href="#3、Tomcat弱口令漏洞" class="headerlink" title="3、Tomcat弱口令漏洞"></a>3、Tomcat弱口令漏洞</h5><p><strong>漏洞原理</strong><br>tocmat支持在管理界面部署项目，也就是部署war包。且在tomcat-users.xml中定义了tomcat用户的信息和权限。</p>
+<p><strong>漏洞复现：</strong><br>环境启动：<br>进入&#x2F;vulhub&#x2F;httpd&#x2F;tomcat8路径执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d  \\启动漏洞环境</span><br><span class="line">docker-compose down  \\关闭漏洞环境</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>①、访问tomcat管理员面使用若口令登录；</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username:tomcat</span><br><span class="line">password:tomcat</span><br></pre></td></tr></table></figure>
+
+<img src="/2022/03/20/tomcat/76376f80236741898e98db6933f596e4.png" class="">
+<p>②、生成.wr文件jsp木马文件上传；</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jar -cvf shell.war shell.jsp</span><br></pre></td></tr></table></figure>
+
+<img src="/2022/03/20/tomcat/eab4af6e8bdc4c0eae04f85c31c24398.png" class="">
+<p>③、使用蚁剑连接获取webshell。</p>
+<img src="/2022/03/20/tomcat/ea368c75d68949e8b56d7cbb2b1e5630.png" class=""></div><div class="post-footer"><div class="meta"><div class="info"><i class="fa fa-sun-o"></i><span class="date">2022-03-20</span><i class="fa fa-tag"></i><a class="tag" href="/categories/Web中间件安全/" title="Web中间件安全">Web中间件安全 </a><a class="tag" href="/categories/Web中间件安全/Tomcat/" title="Tomcat">Tomcat </a></div></div></div></div><div class="share"><div class="evernote"><a class="fa fa-bookmark" href="javascript:(function(){EN_CLIP_HOST='http://www.evernote.com';try{var%20x=document.createElement('SCRIPT');x.type='text/javascript';x.src=EN_CLIP_HOST+'/public/bookmarkClipper.js?'+(new%20Date().getTime()/100000);document.getElementsByTagName('head')[0].appendChild(x);}catch(e){location.href=EN_CLIP_HOST+'/clip.action?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title);}})();" ref="nofollow" target="_blank"></a></div><div class="weibo"><a class="fa fa-weibo" href="javascript:void((function(s,d,e){try{}catch(e){}var f='http://service.weibo.com/share/share.php?',u=d.location.href,p=['url=',e(u),'&amp;title=',e(d.title),'&amp;appkey=2924220432'].join('');function a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=620,height=450,left=',(s.width-620)/2,',top=',(s.height-450)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent)){setTimeout(a,0)}else{a()}})(screen,document,encodeURIComponent));"></a></div><div class="twitter"><a class="fa fa-twitter" target="_blank" rel="noopener" href="http://twitter.com/home?status=,http://example.com/2022/03/20/tomcat/,别来无恙,Web中间件安全-Tomcat篇,;"></a></div></div><div class="pagination"><ul class="clearfix"><li class="next pagbuttons"><a class="btn" role="navigation" href="/2022/03/18/apache/" title="Web中间件安全-Apache篇">下一篇</a></li></ul></div></div></div></div></div><script src="/js/jquery.js"></script><script src="/js/jquery-migrate-1.2.1.min.js"></script><script src="/js/jquery.appear.js"></script></body></html>
